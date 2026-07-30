@@ -30,17 +30,16 @@
             width: 100%;
             box-shadow: 0 20px 60px rgba(255, 105, 180, 0.25);
             border: 1px solid rgba(255, 255, 255, 0.5);
+            text-align: center;
         }
 
         h1 {
-            text-align: center;
             color: #d63384;
             font-size: 32px;
             margin-bottom: 8px;
         }
 
         .subtitle {
-            text-align: center;
             color: #a85a7a;
             font-size: 14px;
             margin-bottom: 30px;
@@ -94,12 +93,7 @@
             background: linear-gradient(135deg, #c02e78, #a02460);
         }
 
-        .input-group button:active {
-            transform: translateY(0);
-        }
-
         .example {
-            text-align: center;
             color: #a85a7a;
             font-size: 13px;
             margin-bottom: 20px;
@@ -116,73 +110,16 @@
             color: #b82a6e;
         }
 
-        #loading {
-            display: none;
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        .spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid #ffd6e7;
-            border-top: 4px solid #d63384;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 16px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        #loading p {
-            color: #a85a7a;
-        }
-
-        #result {
-            display: none;
-            margin-top: 24px;
-            padding: 24px;
-            background: #fff5f9;
-            border-radius: 18px;
+        .api-url-display {
+            background: #f8f0f5;
+            padding: 12px;
+            border-radius: 10px;
+            margin: 15px 0;
             border: 1px solid #ffd6e7;
-        }
-
-        #mediaContainer {
-            margin-bottom: 16px;
-            border-radius: 14px;
-            overflow: hidden;
-            background: #1a1a2e;
-            max-height: 500px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #mediaContainer img,
-        #mediaContainer video {
-            max-width: 100%;
-            max-height: 500px;
-            object-fit: contain;
-        }
-
-        #mediaInfo {
-            padding: 8px 4px;
-        }
-
-        #mediaInfo h3 {
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 13px;
             color: #4a2a3a;
-            margin-bottom: 8px;
-            font-size: 18px;
-            word-break: break-word;
-        }
-
-        #mediaInfo p {
-            color: #7a5a6a;
-            font-size: 14px;
-            margin-bottom: 4px;
         }
 
         .download-btn {
@@ -222,24 +159,6 @@
             display: block;
         }
 
-        .success-box {
-            background: #d4edda;
-            color: #155724;
-            padding: 12px 16px;
-            border-radius: 12px;
-            margin-top: 12px;
-            display: none;
-            border: 1px solid #b8daff;
-        }
-
-        .success-box.show {
-            display: block;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
         @media (max-width: 600px) {
             .container {
                 padding: 24px;
@@ -260,7 +179,7 @@
 
     <div class="container">
         <h1>🌸 Pinterest Downloader</h1>
-        <p class="subtitle">Paste any Pinterest URL to download images & videos</p>
+        <p class="subtitle">Paste any Pinterest URL to download</p>
 
         <div class="input-group">
             <input type="text" id="pinUrl" placeholder="https://pin.it/..." />
@@ -271,29 +190,14 @@
             <span>✨ Try: </span>
             <a onclick="setExample('https://pin.it/1ADF1XkNF')">Image</a>
             <span> | </span>
-            <a onclick="setExample('https://pin.it/4uur7opvF')">Video</a>
+            <a onclick="setExample('https://pin.it/4ACnPonsw')">Video</a>
         </div>
 
-        <div id="loading">
-            <div class="spinner"></div>
-            <p>🌸 Processing your pin...</p>
+        <div id="result" style="display: none; margin-top: 20px;">
+            <div class="api-url-display" id="apiUrlDisplay"></div>
+            <button id="downloadBtnFile" class="download-btn">⬇ Open Download</button>
+            <div id="error" class="error"></div>
         </div>
-
-        <div id="result">
-            <div id="mediaContainer"></div>
-            <div id="mediaInfo">
-                <h3 id="mediaTitle">Title</h3>
-                <p id="mediaType">Type: </p>
-                <p id="mediaSize">Size: </p>
-                <!-- Filename is hidden -->
-                <span id="filenameDisplay" class="hidden"></span>
-                <!-- Download button now navigates to the API -->
-                <a id="downloadLink" class="download-btn" target="_blank">⬇ Download File</a>
-            </div>
-        </div>
-
-        <div id="error" class="error"></div>
-        <div id="successBox" class="success-box">✅ File downloaded successfully!</div>
     </div>
 
     <script>
@@ -306,16 +210,10 @@
 
         const pinUrlInput = document.getElementById('pinUrl');
         const downloadBtn = document.getElementById('downloadBtn');
-        const loading = document.getElementById('loading');
         const result = document.getElementById('result');
+        const apiUrlDisplay = document.getElementById('apiUrlDisplay');
+        const downloadBtnFile = document.getElementById('downloadBtnFile');
         const error = document.getElementById('error');
-        const successBox = document.getElementById('successBox');
-        const mediaContainer = document.getElementById('mediaContainer');
-        const mediaTitle = document.getElementById('mediaTitle');
-        const mediaType = document.getElementById('mediaType');
-        const mediaSize = document.getElementById('mediaSize');
-        const filenameDisplay = document.getElementById('filenameDisplay');
-        const downloadLink = document.getElementById('downloadLink');
 
         let currentPinUrl = '';
 
@@ -329,7 +227,7 @@
         // MAIN FUNCTION
         // ============================================
 
-        async function handleDownload() {
+        function handleDownload() {
             const url = pinUrlInput.value.trim();
             if (!url) {
                 showError('Please enter a Pinterest URL');
@@ -345,116 +243,25 @@
 
             currentPinUrl = url;
 
-            // Show loading
-            loading.style.display = 'block';
-            result.style.display = 'none';
-            error.classList.remove('show');
-            successBox.classList.remove('show');
-
-            try {
-                // ============================================
-                // STEP 1: Get pin info to show preview
-                // ============================================
-
-                console.log('📡 Fetching pin info...');
-                const infoResponse = await fetch(`${API_BASE}/api/pin/url?url=${encodeURIComponent(url)}`);
-                const infoData = await infoResponse.json();
-
-                console.log('📦 Pin info:', infoData);
-
-                if (!infoData.success || !infoData.data || !infoData.data.downloadUrl) {
-                    showError('No media found for this pin. It might be private or deleted.');
-                    return;
-                }
-
-                const pinData = infoData.data;
-
-                // ============================================
-                // STEP 2: Show the file preview
-                // ============================================
-
-                // Store filename in hidden element
-                const filename = pinData.downloadUrl.split('/').pop() || 'file';
-                filenameDisplay.textContent = filename;
-
-                // Show preview
-                await displayMedia(
-                    pinData.downloadUrl,
-                    pinData.size || null,
-                    pinData.type || 'image',
-                    pinData.title || 'Untitled'
-                );
-
-                // ============================================
-                // STEP 3: Set up download link to navigate to API
-                // ============================================
-
-                // Build the direct API URL for auto-download
-                const apiDownloadUrl = `${API_BASE}${API_GET_ENDPOINT}${encodeURIComponent(url)}`;
-                downloadLink.href = apiDownloadUrl;
-                downloadLink.target = '_blank'; // Opens in new tab
-                downloadLink.textContent = '⬇ Download File';
-
-                successBox.classList.add('show');
-
-            } catch (err) {
-                console.error('❌ Error:', err);
-                showError('Network error. Please check your connection and try again.');
-            } finally {
-                loading.style.display = 'none';
-            }
-        }
-
-        // ============================================
-        // DISPLAY MEDIA (Filename NOT shown)
-        // ============================================
-
-        async function displayMedia(downloadUrl, size, type, title) {
-            const isVideo = type === 'video' || downloadUrl.endsWith('.mp4') || downloadUrl.endsWith('.webm');
-            const isImage = type === 'image' || downloadUrl.endsWith('.jpg') || downloadUrl.endsWith('.jpeg') || 
-                           downloadUrl.endsWith('.png') || downloadUrl.endsWith('.gif') || 
-                           downloadUrl.endsWith('.webp');
-            const isM3U8 = downloadUrl.endsWith('.m3u8');
-
-            // Show media preview
-            mediaContainer.innerHTML = '';
+            // ============================================
+            // BUILD API URL - WITHOUT ENCODING
+            // ============================================
             
-            if (isVideo && !isM3U8) {
-                const video = document.createElement('video');
-                video.src = downloadUrl;
-                video.controls = true;
-                video.style.maxWidth = '100%';
-                video.style.maxHeight = '500px';
-                video.style.background = '#000';
-                video.autoplay = true;
-                video.muted = true;
-                mediaContainer.appendChild(video);
-            } else if (isImage) {
-                const img = document.createElement('img');
-                img.src = downloadUrl;
-                img.alt = title || 'Downloaded image';
-                img.style.maxWidth = '100%';
-                img.style.maxHeight = '500px';
-                mediaContainer.appendChild(img);
-            } else {
-                mediaContainer.innerHTML = `
-                    <div style="padding: 40px; color: #fff; text-align: center; background: #2a2a3e;">
-                        <span style="font-size: 64px;">${isM3U8 ? '📋' : '📄'}</span>
-                        <p style="margin-top: 12px;">${isM3U8 ? 'M3U8 Playlist (Video Stream)' : 'File ready for download'}</p>
-                    </div>
-                `;
-            }
-
-            // Show info (filename is NOT shown)
-            const sizeText = size ? `${(size / 1024).toFixed(0)} KB` : 'Unknown';
-            let typeText = isM3U8 ? 'M3U8 Playlist' : isVideo ? 'Video' : isImage ? 'Image' : 'File';
+            // Directly append the URL as is
+            const apiUrl = `${API_BASE}${API_GET_ENDPOINT}${url}`;
             
-            mediaTitle.textContent = title || 'Untitled';
-            mediaType.textContent = `Type: ${typeText}`;
-            mediaSize.textContent = `Size: ${sizeText}`;
-
+            console.log('📡 API URL:', apiUrl);
+            
+            // Show the URL
+            apiUrlDisplay.textContent = `🔗 ${apiUrl}`;
             result.style.display = 'block';
             error.classList.remove('show');
+
+            // Set up the download button
+            downloadBtnFile.onclick = function() {
+                // Open in new tab
+                window.open(apiUrl, '_blank');
+            };
         }
 
         // ============================================
@@ -465,8 +272,6 @@
             error.textContent = '❌ ' + message;
             error.classList.add('show');
             result.style.display = 'none';
-            loading.style.display = 'none';
-            successBox.classList.remove('show');
         }
 
         // ============================================
@@ -481,7 +286,7 @@
             }
         });
 
-        // Auto-download if URL is provided in query string
+        // Auto-load if URL is provided in query string
         window.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
             const url = params.get('url');
@@ -493,10 +298,6 @@
 
         console.log('🌸 Pinterest Downloader loaded!');
         console.log(`📡 API Base: ${API_BASE}`);
-        console.log(`📡 Download Endpoint: ${API_GET_ENDPOINT}`);
-        console.log('Examples:');
-        console.log('  Image: https://pin.it/1ADF1XkNF');
-        console.log('  Video: https://pin.it/4uur7opvF');
     </script>
 
 </body>
