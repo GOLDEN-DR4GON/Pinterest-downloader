@@ -129,18 +129,10 @@
             display: block;
         }
 
-        .api-url-display {
-            background: #f8f0f5;
-            padding: 12px;
-            border-radius: 10px;
-            margin: 12px 0;
-            border: 1px solid #ffd6e7;
-            word-break: break-all;
-            font-family: monospace;
-            font-size: 13px;
-            color: #4a2a3a;
-            user-select: all;
-            cursor: text;
+        .info-text {
+            color: #7a5a6a;
+            font-size: 14px;
+            margin: 8px 0;
         }
 
         .download-btn {
@@ -165,6 +157,12 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(40, 167, 69, 0.35);
             background: linear-gradient(135deg, #1e8e3a, #167a30);
+        }
+
+        .download-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
         }
 
         .error {
@@ -205,20 +203,38 @@
             text-align: center;
         }
 
-        .copy-btn {
-            padding: 8px 16px;
-            background: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 12px;
-            cursor: pointer;
-            margin-top: 8px;
-            transition: all 0.3s ease;
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #ffd6e7;
+            border-radius: 3px;
+            margin: 10px 0;
+            overflow: hidden;
+            display: none;
         }
 
-        .copy-btn:hover {
-            background: #5a6268;
+        .progress-bar.show {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #d63384, #28a745);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .filename-display {
+            background: #f8f0f5;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+            font-family: monospace;
+            font-size: 13px;
+            color: #4a2a3a;
+            word-break: break-all;
+            border: 1px solid #ffd6e7;
         }
 
         @media (max-width: 600px) {
@@ -256,12 +272,21 @@
         </div>
 
         <div id="resultBox" class="result-box">
-            <div class="api-url-display" id="apiUrlDisplay"></div>
-            <button id="copyUrlBtn" class="copy-btn">📋 Copy URL</button>
-            <button id="downloadBtnFile" class="download-btn">⬇ Open Download</button>
+            <div id="mediaInfo">
+                <p class="info-text" id="titleDisplay">📌 Loading...</p>
+                <p class="info-text" id="typeDisplay">Type: Unknown</p>
+                <p class="info-text" id="sizeDisplay">Size: Unknown</p>
+                <div class="filename-display" id="filenameDisplay">📄 filename.mp4</div>
+            </div>
+
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <button id="downloadBtnFile" class="download-btn">⬇ Download File</button>
             <div id="error" class="error"></div>
-            <div class="success" id="successMessage">✅ URL copied! Paste in new tab to download.</div>
-            <div class="note">💡 Click "Open Download" to download automatically, or copy the URL and paste in a new tab.</div>
+            <div class="success" id="successMessage">✅ File downloaded successfully!</div>
+            <div class="note">💡 Click the button above to download. The file will save with its original name.</div>
         </div>
     </div>
 
@@ -271,18 +296,21 @@
         // ============================================
 
         const API_BASE = 'https://pinterest-image-downloader-jbqy.onrender.com';
-        const API_GET_ENDPOINT = '/api/get?url=';
 
         const pinUrlInput = document.getElementById('pinUrl');
         const downloadBtn = document.getElementById('downloadBtn');
         const resultBox = document.getElementById('resultBox');
-        const apiUrlDisplay = document.getElementById('apiUrlDisplay');
+        const titleDisplay = document.getElementById('titleDisplay');
+        const typeDisplay = document.getElementById('typeDisplay');
+        const sizeDisplay = document.getElementById('sizeDisplay');
+        const filenameDisplay = document.getElementById('filenameDisplay');
         const downloadBtnFile = document.getElementById('downloadBtnFile');
-        const copyUrlBtn = document.getElementById('copyUrlBtn');
         const error = document.getElementById('error');
         const successMessage = document.getElementById('successMessage');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
 
-        let currentApiUrl = '';
+        let currentData = null;
 
         // Example URLs
         function setExample(url) {
@@ -291,10 +319,10 @@
         }
 
         // ============================================
-        // MAIN FUNCTION
+        // MAIN FUNCTION - GET PIN INFO
         // ============================================
 
-        function handleDownload() {
+        async function handleDownload() {
             const url = pinUrlInput.value.trim();
             if (!url) {
                 showError('Please enter a Pinterest URL');
@@ -310,82 +338,135 @@
 
             error.classList.remove('show');
             successMessage.classList.remove('show');
+            resultBox.classList.remove('show');
+            downloadBtnFile.disabled = false;
+            downloadBtnFile.textContent = '⬇ Download File';
 
-            // ============================================
-            // BUILD API URL - NO ENCODING
-            // ============================================
-            
-            // Store the raw URL without encoding
-            currentApiUrl = `${API_BASE}${API_GET_ENDPOINT}${url}`;
-            
-            console.log('📡 API URL (no encoding):', currentApiUrl);
-            
-            // Show the URL
-            apiUrlDisplay.textContent = `🔗 ${currentApiUrl}`;
-            resultBox.classList.add('show');
+            try {
+                // Get pin info
+                console.log('📡 Fetching pin info...');
+                const infoResponse = await fetch(`${API_BASE}/api/pin/url?url=${encodeURIComponent(url)}`);
+                const infoData = await infoResponse.json();
 
-            // ============================================
-            // COPY URL FUNCTION
-            // ============================================
-            
-            copyUrlBtn.onclick = function() {
-                navigator.clipboard.writeText(currentApiUrl).then(() => {
-                    successMessage.textContent = '✅ URL copied to clipboard! Paste in browser to download.';
-                    successMessage.classList.add('show');
-                }).catch(() => {
-                    // Fallback
-                    const textArea = document.createElement('textarea');
-                    textArea.value = currentApiUrl;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    successMessage.textContent = '✅ URL copied! Paste in browser to download.';
-                    successMessage.classList.add('show');
-                });
-            };
+                console.log('📦 Pin info:', infoData);
 
-            // ============================================
-            // OPEN DOWNLOAD - USING WINDOW.OPEN WITH RAW URL
-            // ============================================
-            
-            downloadBtnFile.onclick = function() {
-                // Method 1: Try window.open with the raw URL
-                const newWindow = window.open('', '_blank');
-                if (newWindow) {
-                    // Write HTML that redirects using JavaScript (prevents encoding)
-                    newWindow.document.write(`
-                        <html>
-                            <head>
-                                <title>Downloading...</title>
-                                <script>
-                                    // This preserves the URL without encoding
-                                    window.location.href = '${currentApiUrl}';
-                                <\/script>
-                            </head>
-                            <body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;background:#ffeef8;">
-                                <div style="text-align:center;padding:40px;background:white;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,0.1);">
-                                    <h2 style="color:#d63384;">🌸 Downloading...</h2>
-                                    <p style="color:#666;margin:20px 0;">Your file should download shortly.</p>
-                                    <div style="width:50px;height:50px;border:4px solid #ffd6e7;border-top-color:#d63384;border-radius:50%;animation:spin 0.8s linear infinite;margin:20px auto;"></div>
-                                    <style>
-                                        @keyframes spin {
-                                            to { transform: rotate(360deg); }
-                                        }
-                                    </style>
-                                </div>
-                            </body>
-                        </html>
-                    `);
-                    newWindow.document.close();
-                    
-                    successMessage.textContent = '✅ Download started in new tab!';
-                    successMessage.classList.add('show');
-                } else {
-                    // Method 2: Fallback - use location.href
-                    window.location.href = currentApiUrl;
+                if (!infoData.success || !infoData.data || !infoData.data.downloadUrl) {
+                    showError('No media found for this pin. It might be private or deleted.');
+                    return;
                 }
-            };
+
+                currentData = infoData.data;
+
+                // Display info
+                const filename = currentData.downloadUrl.split('/').pop() || 'file';
+                const isVideo = currentData.type === 'video';
+                const sizeText = currentData.size ? `${(currentData.size / 1024).toFixed(0)} KB` : 'Unknown';
+
+                titleDisplay.textContent = `📌 ${currentData.title || 'Untitled'}`;
+                typeDisplay.textContent = `Type: ${isVideo ? 'Video' : 'Image'}`;
+                sizeDisplay.textContent = `Size: ${sizeText}`;
+                filenameDisplay.textContent = `📄 ${filename}`;
+
+                resultBox.classList.add('show');
+
+                // Set up download button
+                downloadBtnFile.onclick = function() {
+                    downloadFile(currentData.downloadUrl, filename);
+                };
+
+            } catch (err) {
+                console.error('❌ Error:', err);
+                showError('Network error. Please check your connection and try again.');
+            }
+        }
+
+        // ============================================
+        // DOWNLOAD FILE - DIRECT FETCH
+        // ============================================
+
+        async function downloadFile(url, filename) {
+            console.log('⬇️ Downloading:', url);
+
+            // Disable button and show progress
+            downloadBtnFile.disabled = true;
+            downloadBtnFile.textContent = '⏳ Downloading...';
+            progressBar.classList.add('show');
+            progressFill.style.width = '0%';
+            error.classList.remove('show');
+            successMessage.classList.remove('show');
+
+            try {
+                // Fetch the file with progress tracking
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // Get content length for progress
+                const contentLength = response.headers.get('content-length');
+                const total = contentLength ? parseInt(contentLength) : 0;
+                let loaded = 0;
+
+                // Read the response as a stream
+                const reader = response.body.getReader();
+                const chunks = [];
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    chunks.push(value);
+                    loaded += value.length;
+
+                    // Update progress
+                    if (total > 0) {
+                        const percent = Math.round((loaded / total) * 100);
+                        progressFill.style.width = `${percent}%`;
+                        downloadBtnFile.textContent = `⏳ Downloading ${percent}%`;
+                    }
+                }
+
+                // Combine chunks into a single blob
+                const blob = new Blob(chunks);
+                const blobUrl = URL.createObjectURL(blob);
+
+                // Create download link
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                // Clean up
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+
+                // Show success
+                successMessage.textContent = `✅ Downloaded: ${filename}`;
+                successMessage.classList.add('show');
+                progressFill.style.width = '100%';
+                downloadBtnFile.textContent = '✅ Complete!';
+
+                console.log('✅ Download complete:', filename);
+
+            } catch (err) {
+                console.error('❌ Download error:', err);
+                error.textContent = `❌ Download failed: ${err.message}`;
+                error.classList.add('show');
+                downloadBtnFile.textContent = '⬇ Try Again';
+            } finally {
+                setTimeout(() => {
+                    downloadBtnFile.disabled = false;
+                    if (!downloadBtnFile.textContent.includes('Complete')) {
+                        downloadBtnFile.textContent = '⬇ Download File';
+                    }
+                    setTimeout(() => {
+                        progressBar.classList.remove('show');
+                        progressFill.style.width = '0%';
+                    }, 3000);
+                }, 2000);
+            }
         }
 
         // ============================================
@@ -396,6 +477,8 @@
             error.textContent = '❌ ' + message;
             error.classList.add('show');
             resultBox.classList.remove('show');
+            downloadBtnFile.disabled = false;
+            downloadBtnFile.textContent = '⬇ Download File';
         }
 
         // ============================================
@@ -422,7 +505,7 @@
 
         console.log('🌸 Pinterest Downloader loaded!');
         console.log(`📡 API Base: ${API_BASE}`);
-        console.log('✅ URL will NOT be encoded - using JavaScript redirect');
+        console.log('✅ Direct download with progress tracking');
     </script>
 
 </body>
