@@ -189,6 +189,11 @@
             text-align: center;
         }
 
+        /* Hidden form for submission */
+        #downloadForm {
+            display: none;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 24px;
@@ -225,10 +230,15 @@
 
         <div id="resultBox" class="result-box">
             <div class="api-url-display" id="apiUrlDisplay"></div>
-            <button id="downloadBtnFile" class="download-btn">⬇ Open Download</button>
+            <button id="downloadBtnFile" class="download-btn">⬇ Download Now</button>
             <div id="error" class="error"></div>
-            <div class="note">💡 URL is sent WITHOUT encoding</div>
+            <div class="note">💡 URL is sent WITHOUT encoding via form submission</div>
         </div>
+
+        <!-- Hidden form for GET submission -->
+        <form id="downloadForm" method="GET" target="_blank">
+            <input type="hidden" name="url" id="formUrlInput" value="">
+        </form>
     </div>
 
     <script>
@@ -237,7 +247,7 @@
         // ============================================
 
         const API_BASE = 'https://pinterest-image-downloader-jbqy.onrender.com';
-        const API_GET_ENDPOINT = '/api/get?url=';
+        const API_GET_ENDPOINT = '/api/get';
 
         const pinUrlInput = document.getElementById('pinUrl');
         const downloadBtn = document.getElementById('downloadBtn');
@@ -245,6 +255,8 @@
         const apiUrlDisplay = document.getElementById('apiUrlDisplay');
         const downloadBtnFile = document.getElementById('downloadBtnFile');
         const error = document.getElementById('error');
+        const downloadForm = document.getElementById('downloadForm');
+        const formUrlInput = document.getElementById('formUrlInput');
 
         let currentPinUrl = '';
 
@@ -276,36 +288,32 @@
             error.classList.remove('show');
 
             // ============================================
-            // BUILD API URL - NO ENCODING
+            // BUILD API URL - Display Only
             // ============================================
             
-            const apiUrl = `${API_BASE}${API_GET_ENDPOINT}${url}`;
+            const apiUrl = `${API_BASE}${API_GET_ENDPOINT}?url=${url}`;
             
-            console.log('📡 API URL (no encoding):', apiUrl);
+            console.log('📡 API URL (display):', apiUrl);
             
             // Show the URL
             apiUrlDisplay.textContent = `🔗 ${apiUrl}`;
             resultBox.classList.add('show');
 
             // ============================================
-            // OPEN DIRECTLY - SIMPLEST APPROACH
+            // SET UP FORM SUBMISSION - NO ENCODING
             // ============================================
             
             downloadBtnFile.onclick = function() {
-                // Use a simple anchor with target="_blank"
-                // This is the most reliable way
-                const a = document.createElement('a');
-                a.href = apiUrl;
-                a.target = '_blank';
-                a.rel = 'noopener noreferrer';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                // Set the form action to the API endpoint
+                downloadForm.action = `${API_BASE}${API_GET_ENDPOINT}`;
                 
-                // Also try window.open as fallback
-                setTimeout(() => {
-                    window.open(apiUrl, '_blank');
-                }, 100);
+                // Set the url parameter value (no encoding - form handles it)
+                formUrlInput.value = url;
+                
+                // Submit the form - browser will NOT encode the URL
+                downloadForm.submit();
+                
+                console.log('📤 Form submitted with URL:', url);
             };
         }
 
@@ -343,8 +351,8 @@
 
         console.log('🌸 Pinterest Downloader loaded!');
         console.log(`📡 API Base: ${API_BASE}`);
-        console.log('⚠️ URL will be sent WITHOUT encoding');
+        console.log('✅ Using form submission - no encoding!');
     </script>
 
 </body>
-                                                                         </html>
+</html>
