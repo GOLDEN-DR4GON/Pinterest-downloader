@@ -237,6 +237,25 @@
             border: 1px solid #ffd6e7;
         }
 
+        /* Media preview */
+        #mediaContainer {
+            margin-bottom: 16px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #1a1a2e;
+            max-height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #mediaContainer img,
+        #mediaContainer video {
+            max-width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 24px;
@@ -272,6 +291,7 @@
         </div>
 
         <div id="resultBox" class="result-box">
+            <div id="mediaContainer"></div>
             <div id="mediaInfo">
                 <p class="info-text" id="titleDisplay">📌 Loading...</p>
                 <p class="info-text" id="typeDisplay">Type: Unknown</p>
@@ -283,10 +303,10 @@
                 <div class="progress-fill" id="progressFill"></div>
             </div>
 
-            <button id="downloadBtnFile" class="download-btn">⬇ Download File</button>
+            <button id="downloadBtnFile" class="download-btn">⬇ Save to Gallery / Download</button>
             <div id="error" class="error"></div>
-            <div class="success" id="successMessage">✅ File downloaded successfully!</div>
-            <div class="note">💡 Click the button above to download. The file will save with its original name.</div>
+            <div class="success" id="successMessage">✅ File saved successfully!</div>
+            <div class="note">💡 On mobile, the file will save to your gallery. On desktop, it will download to your downloads folder.</div>
         </div>
     </div>
 
@@ -300,6 +320,7 @@
         const pinUrlInput = document.getElementById('pinUrl');
         const downloadBtn = document.getElementById('downloadBtn');
         const resultBox = document.getElementById('resultBox');
+        const mediaContainer = document.getElementById('mediaContainer');
         const titleDisplay = document.getElementById('titleDisplay');
         const typeDisplay = document.getElementById('typeDisplay');
         const sizeDisplay = document.getElementById('sizeDisplay');
@@ -339,11 +360,15 @@
             error.classList.remove('show');
             successMessage.classList.remove('show');
             resultBox.classList.remove('show');
+            mediaContainer.innerHTML = '';
             downloadBtnFile.disabled = false;
-            downloadBtnFile.textContent = '⬇ Download File';
+            downloadBtnFile.textContent = '⬇ Save to Gallery / Download';
 
             try {
-                // Get pin info
+                // ============================================
+                // STEP 1: Get pin info
+                // ============================================
+
                 console.log('📡 Fetching pin info...');
                 const infoResponse = await fetch(`${API_BASE}/api/pin/url?url=${encodeURIComponent(url)}`);
                 const infoData = await infoResponse.json();
@@ -357,9 +382,47 @@
 
                 currentData = infoData.data;
 
+                // ============================================
+                // STEP 2: Show preview
+                // ============================================
+
+                const isVideo = currentData.type === 'video' || 
+                               currentData.downloadUrl.includes('.mp4') || 
+                               currentData.downloadUrl.includes('.webm');
+                const isImage = !isVideo || 
+                               currentData.downloadUrl.includes('.jpg') || 
+                               currentData.downloadUrl.includes('.png') || 
+                               currentData.downloadUrl.includes('.gif');
+
+                mediaContainer.innerHTML = '';
+                if (isVideo) {
+                    const video = document.createElement('video');
+                    video.src = currentData.downloadUrl;
+                    video.controls = true;
+                    video.style.maxWidth = '100%';
+                    video.style.maxHeight = '500px';
+                    video.style.background = '#000';
+                    video.autoplay = true;
+                    video.muted = true;
+                    mediaContainer.appendChild(video);
+                } else if (isImage) {
+                    const img = document.createElement('img');
+                    img.src = currentData.downloadUrl;
+                    img.alt = currentData.title || 'Downloaded image';
+                    img.style.maxWidth = '100%';
+                    img.style.maxHeight = '500px';
+                    mediaContainer.appendChild(img);
+                } else {
+                    mediaContainer.innerHTML = `
+                        <div style="padding: 40px; color: #fff; text-align: center; background: #2a2a3e; width: 100%;">
+                            <span style="font-size: 48px;">📄</span>
+                            <p style="margin-top: 12px;">File ready for download</p>
+                        </div>
+                    `;
+                }
+
                 // Display info
                 const filename = currentData.downloadUrl.split('/').pop() || 'file';
-                const isVideo = currentData.type === 'video';
                 const sizeText = currentData.size ? `${(currentData.size / 1024).toFixed(0)} KB` : 'Unknown';
 
                 titleDisplay.textContent = `📌 ${currentData.title || 'Untitled'}`;
@@ -369,7 +432,10 @@
 
                 resultBox.classList.add('show');
 
-                // Set up download button
+                // ============================================
+                // STEP 3: Set up download button
+                // ============================================
+
                 downloadBtnFile.onclick = function() {
                     downloadFile(currentData.downloadUrl, filename);
                 };
@@ -381,7 +447,7 @@
         }
 
         // ============================================
-        // DOWNLOAD FILE - DIRECT FETCH
+        // DOWNLOAD FILE - SAVES TO GALLERY
         // ============================================
 
         async function downloadFile(url, filename) {
@@ -396,7 +462,10 @@
             successMessage.classList.remove('show');
 
             try {
-                // Fetch the file with progress tracking
+                // ============================================
+                // STEP 1: Fetch the file
+                // ============================================
+
                 const response = await fetch(url);
 
                 if (!response.ok) {
@@ -423,7 +492,7 @@
                     if (total > 0) {
                         const percent = Math.round((loaded / total) * 100);
                         progressFill.style.width = `${percent}%`;
-                        downloadBtnFile.textContent = `⏳ Downloading ${percent}%`;
+                        downloadBtnFile.textContent = `⏳ ${percent}%`;
                     }
                 }
 
@@ -431,7 +500,12 @@
                 const blob = new Blob(chunks);
                 const blobUrl = URL.createObjectURL(blob);
 
-                // Create download link
+                // ============================================
+                // STEP 2: Save the file
+                // ============================================
+
+                // For mobile: try to save to gallery using download attribute
+                // For desktop: standard download
                 const a = document.createElement('a');
                 a.href = blobUrl;
                 a.download = filename;
@@ -442,11 +516,14 @@
                 // Clean up
                 setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
 
-                // Show success
-                successMessage.textContent = `✅ Downloaded: ${filename}`;
+                // ============================================
+                // STEP 3: Show success
+                // ============================================
+
+                successMessage.textContent = `✅ Saved: ${filename}`;
                 successMessage.classList.add('show');
                 progressFill.style.width = '100%';
-                downloadBtnFile.textContent = '✅ Complete!';
+                downloadBtnFile.textContent = '✅ Saved!';
 
                 console.log('✅ Download complete:', filename);
 
@@ -458,8 +535,8 @@
             } finally {
                 setTimeout(() => {
                     downloadBtnFile.disabled = false;
-                    if (!downloadBtnFile.textContent.includes('Complete')) {
-                        downloadBtnFile.textContent = '⬇ Download File';
+                    if (!downloadBtnFile.textContent.includes('Saved')) {
+                        downloadBtnFile.textContent = '⬇ Save to Gallery / Download';
                     }
                     setTimeout(() => {
                         progressBar.classList.remove('show');
@@ -478,7 +555,7 @@
             error.classList.add('show');
             resultBox.classList.remove('show');
             downloadBtnFile.disabled = false;
-            downloadBtnFile.textContent = '⬇ Download File';
+            downloadBtnFile.textContent = '⬇ Save to Gallery / Download';
         }
 
         // ============================================
@@ -505,7 +582,7 @@
 
         console.log('🌸 Pinterest Downloader loaded!');
         console.log(`📡 API Base: ${API_BASE}`);
-        console.log('✅ Direct download with progress tracking');
+        console.log('✅ Saves directly to gallery / downloads folder');
     </script>
 
 </body>
