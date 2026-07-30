@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -189,9 +189,19 @@
             text-align: center;
         }
 
-        /* Hidden form for submission */
-        #downloadForm {
+        /* Success message */
+        .success {
+            color: #155724;
+            padding: 12px;
+            background: #d4edda;
+            border-radius: 12px;
+            margin-top: 12px;
+            border: 1px solid #b8daff;
             display: none;
+        }
+
+        .success.show {
+            display: block;
         }
 
         @media (max-width: 600px) {
@@ -230,15 +240,14 @@
 
         <div id="resultBox" class="result-box">
             <div class="api-url-display" id="apiUrlDisplay"></div>
-            <button id="downloadBtnFile" class="download-btn">⬇ Download Now</button>
+            
+            <!-- Direct Download Link -->
+            <a id="directDownloadLink" class="download-btn" target="_blank">⬇ Direct Download</a>
+            
             <div id="error" class="error"></div>
-            <div class="note">💡 URL is sent WITHOUT encoding via form submission</div>
+            <div class="success" id="successMessage">✅ Download started! Check your browser's download folder.</div>
+            <div class="note">💡 Click the button above to download. If it doesn't work, copy the URL below.</div>
         </div>
-
-        <!-- Hidden form for GET submission -->
-        <form id="downloadForm" method="GET" target="_blank">
-            <input type="hidden" name="url" id="formUrlInput" value="">
-        </form>
     </div>
 
     <script>
@@ -247,16 +256,15 @@
         // ============================================
 
         const API_BASE = 'https://pinterest-image-downloader-jbqy.onrender.com';
-        const API_GET_ENDPOINT = '/api/get';
+        const API_GET_ENDPOINT = '/api/get?url=';
 
         const pinUrlInput = document.getElementById('pinUrl');
         const downloadBtn = document.getElementById('downloadBtn');
         const resultBox = document.getElementById('resultBox');
         const apiUrlDisplay = document.getElementById('apiUrlDisplay');
-        const downloadBtnFile = document.getElementById('downloadBtnFile');
+        const directDownloadLink = document.getElementById('directDownloadLink');
         const error = document.getElementById('error');
-        const downloadForm = document.getElementById('downloadForm');
-        const formUrlInput = document.getElementById('formUrlInput');
+        const successMessage = document.getElementById('successMessage');
 
         let currentPinUrl = '';
 
@@ -286,35 +294,35 @@
 
             currentPinUrl = url;
             error.classList.remove('show');
+            successMessage.classList.remove('show');
 
             // ============================================
-            // BUILD API URL - Display Only
+            // BUILD API URL - NO ENCODING
             // ============================================
             
-            const apiUrl = `${API_BASE}${API_GET_ENDPOINT}?url=${url}`;
+            const apiUrl = `${API_BASE}${API_GET_ENDPOINT}${url}`;
             
-            console.log('📡 API URL (display):', apiUrl);
+            console.log('📡 API URL:', apiUrl);
             
             // Show the URL
             apiUrlDisplay.textContent = `🔗 ${apiUrl}`;
             resultBox.classList.add('show');
 
             // ============================================
-            // SET UP FORM SUBMISSION - NO ENCODING
+            // SET UP DIRECT DOWNLOAD LINK
             // ============================================
             
-            downloadBtnFile.onclick = function() {
-                // Set the form action to the API endpoint
-                downloadForm.action = `${API_BASE}${API_GET_ENDPOINT}`;
-                
-                // Set the url parameter value (no encoding - form handles it)
-                formUrlInput.value = url;
-                
-                // Submit the form - browser will NOT encode the URL
-                downloadForm.submit();
-                
-                console.log('📤 Form submitted with URL:', url);
-            };
+            // Set the href directly - this is the most reliable method
+            directDownloadLink.href = apiUrl;
+            directDownloadLink.target = '_blank';
+            directDownloadLink.textContent = '⬇ Click to Download';
+            
+            // Show success message
+            successMessage.textContent = '✅ Download link ready! Click the button above.';
+            successMessage.classList.add('show');
+            
+            // Log for debugging
+            console.log('✅ Download link created:', apiUrl);
         }
 
         // ============================================
@@ -351,7 +359,7 @@
 
         console.log('🌸 Pinterest Downloader loaded!');
         console.log(`📡 API Base: ${API_BASE}`);
-        console.log('✅ Using form submission - no encoding!');
+        console.log('✅ Using direct link - no loading screens!');
     </script>
 
 </body>
