@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -139,6 +139,8 @@
             font-family: monospace;
             font-size: 13px;
             color: #4a2a3a;
+            user-select: all;
+            cursor: text;
         }
 
         .download-btn {
@@ -178,18 +180,6 @@
             display: block;
         }
 
-        .note {
-            color: #a85a7a;
-            font-size: 12px;
-            margin-top: 12px;
-            padding: 10px;
-            background: #fff0f5;
-            border-radius: 10px;
-            border: 1px solid #ffd6e7;
-            text-align: center;
-        }
-
-        /* Success message */
         .success {
             color: #155724;
             padding: 12px;
@@ -202,6 +192,33 @@
 
         .success.show {
             display: block;
+        }
+
+        .note {
+            color: #a85a7a;
+            font-size: 12px;
+            margin-top: 12px;
+            padding: 10px;
+            background: #fff0f5;
+            border-radius: 10px;
+            border: 1px solid #ffd6e7;
+            text-align: center;
+        }
+
+        .copy-btn {
+            padding: 8px 16px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #5a6268;
         }
 
         @media (max-width: 600px) {
@@ -240,13 +257,11 @@
 
         <div id="resultBox" class="result-box">
             <div class="api-url-display" id="apiUrlDisplay"></div>
-            
-            <!-- Direct Download Link -->
-            <a id="directDownloadLink" class="download-btn" target="_blank">⬇ Direct Download</a>
-            
+            <button id="copyUrlBtn" class="copy-btn">📋 Copy URL</button>
+            <button id="downloadBtnFile" class="download-btn">⬇ Open Download</button>
             <div id="error" class="error"></div>
-            <div class="success" id="successMessage">✅ Download started! Check your browser's download folder.</div>
-            <div class="note">💡 Click the button above to download. If it doesn't work, copy the URL below.</div>
+            <div class="success" id="successMessage">✅ URL copied! Paste in new tab to download.</div>
+            <div class="note">💡 Click "Open Download" to download automatically, or copy the URL and paste in a new tab.</div>
         </div>
     </div>
 
@@ -262,11 +277,12 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const resultBox = document.getElementById('resultBox');
         const apiUrlDisplay = document.getElementById('apiUrlDisplay');
-        const directDownloadLink = document.getElementById('directDownloadLink');
+        const downloadBtnFile = document.getElementById('downloadBtnFile');
+        const copyUrlBtn = document.getElementById('copyUrlBtn');
         const error = document.getElementById('error');
         const successMessage = document.getElementById('successMessage');
 
-        let currentPinUrl = '';
+        let currentApiUrl = '';
 
         // Example URLs
         function setExample(url) {
@@ -292,7 +308,6 @@
                 return;
             }
 
-            currentPinUrl = url;
             error.classList.remove('show');
             successMessage.classList.remove('show');
 
@@ -300,29 +315,77 @@
             // BUILD API URL - NO ENCODING
             // ============================================
             
-            const apiUrl = `${API_BASE}${API_GET_ENDPOINT}${url}`;
+            // Store the raw URL without encoding
+            currentApiUrl = `${API_BASE}${API_GET_ENDPOINT}${url}`;
             
-            console.log('📡 API URL:', apiUrl);
+            console.log('📡 API URL (no encoding):', currentApiUrl);
             
             // Show the URL
-            apiUrlDisplay.textContent = `🔗 ${apiUrl}`;
+            apiUrlDisplay.textContent = `🔗 ${currentApiUrl}`;
             resultBox.classList.add('show');
 
             // ============================================
-            // SET UP DIRECT DOWNLOAD LINK
+            // COPY URL FUNCTION
             // ============================================
             
-            // Set the href directly - this is the most reliable method
-            directDownloadLink.href = apiUrl;
-            directDownloadLink.target = '_blank';
-            directDownloadLink.textContent = '⬇ Click to Download';
+            copyUrlBtn.onclick = function() {
+                navigator.clipboard.writeText(currentApiUrl).then(() => {
+                    successMessage.textContent = '✅ URL copied to clipboard! Paste in browser to download.';
+                    successMessage.classList.add('show');
+                }).catch(() => {
+                    // Fallback
+                    const textArea = document.createElement('textarea');
+                    textArea.value = currentApiUrl;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    successMessage.textContent = '✅ URL copied! Paste in browser to download.';
+                    successMessage.classList.add('show');
+                });
+            };
+
+            // ============================================
+            // OPEN DOWNLOAD - USING WINDOW.OPEN WITH RAW URL
+            // ============================================
             
-            // Show success message
-            successMessage.textContent = '✅ Download link ready! Click the button above.';
-            successMessage.classList.add('show');
-            
-            // Log for debugging
-            console.log('✅ Download link created:', apiUrl);
+            downloadBtnFile.onclick = function() {
+                // Method 1: Try window.open with the raw URL
+                const newWindow = window.open('', '_blank');
+                if (newWindow) {
+                    // Write HTML that redirects using JavaScript (prevents encoding)
+                    newWindow.document.write(`
+                        <html>
+                            <head>
+                                <title>Downloading...</title>
+                                <script>
+                                    // This preserves the URL without encoding
+                                    window.location.href = '${currentApiUrl}';
+                                <\/script>
+                            </head>
+                            <body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;background:#ffeef8;">
+                                <div style="text-align:center;padding:40px;background:white;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,0.1);">
+                                    <h2 style="color:#d63384;">🌸 Downloading...</h2>
+                                    <p style="color:#666;margin:20px 0;">Your file should download shortly.</p>
+                                    <div style="width:50px;height:50px;border:4px solid #ffd6e7;border-top-color:#d63384;border-radius:50%;animation:spin 0.8s linear infinite;margin:20px auto;"></div>
+                                    <style>
+                                        @keyframes spin {
+                                            to { transform: rotate(360deg); }
+                                        }
+                                    </style>
+                                </div>
+                            </body>
+                        </html>
+                    `);
+                    newWindow.document.close();
+                    
+                    successMessage.textContent = '✅ Download started in new tab!';
+                    successMessage.classList.add('show');
+                } else {
+                    // Method 2: Fallback - use location.href
+                    window.location.href = currentApiUrl;
+                }
+            };
         }
 
         // ============================================
@@ -359,7 +422,7 @@
 
         console.log('🌸 Pinterest Downloader loaded!');
         console.log(`📡 API Base: ${API_BASE}`);
-        console.log('✅ Using direct link - no loading screens!');
+        console.log('✅ URL will NOT be encoded - using JavaScript redirect');
     </script>
 
 </body>
