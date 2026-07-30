@@ -236,7 +236,6 @@
             display: block;
         }
 
-        /* Hidden filename - never shown to user */
         .hidden {
             display: none !important;
         }
@@ -286,9 +285,10 @@
                 <h3 id="mediaTitle">Title</h3>
                 <p id="mediaType">Type: </p>
                 <p id="mediaSize">Size: </p>
-                <!-- Filename is hidden - never shown to user -->
+                <!-- Filename is hidden -->
                 <span id="filenameDisplay" class="hidden"></span>
-                <button id="downloadBtnFile" class="download-btn">⬇ Download File</button>
+                <!-- Download button now navigates to the API -->
+                <a id="downloadLink" class="download-btn" target="_blank">⬇ Download File</a>
             </div>
         </div>
 
@@ -302,6 +302,7 @@
         // ============================================
 
         const API_BASE = 'https://pinterest-image-downloader-jbqy.onrender.com';
+        const API_GET_ENDPOINT = '/api/get?url=';
 
         const pinUrlInput = document.getElementById('pinUrl');
         const downloadBtn = document.getElementById('downloadBtn');
@@ -314,10 +315,9 @@
         const mediaType = document.getElementById('mediaType');
         const mediaSize = document.getElementById('mediaSize');
         const filenameDisplay = document.getElementById('filenameDisplay');
-        const downloadBtnFile = document.getElementById('downloadBtnFile');
+        const downloadLink = document.getElementById('downloadLink');
 
-        let currentFilename = '';
-        let currentDownloadUrl = '';
+        let currentPinUrl = '';
 
         // Example URLs
         function setExample(url) {
@@ -326,7 +326,7 @@
         }
 
         // ============================================
-        // MAIN DOWNLOAD FUNCTION
+        // MAIN FUNCTION
         // ============================================
 
         async function handleDownload() {
@@ -343,6 +343,8 @@
                 return;
             }
 
+            currentPinUrl = url;
+
             // Show loading
             loading.style.display = 'block';
             result.style.display = 'none';
@@ -351,7 +353,7 @@
 
             try {
                 // ============================================
-                // STEP 1: Get pin info
+                // STEP 1: Get pin info to show preview
                 // ============================================
 
                 console.log('📡 Fetching pin info...');
@@ -368,45 +370,30 @@
                 const pinData = infoData.data;
 
                 // ============================================
-                // STEP 2: Download the media
+                // STEP 2: Show the file preview
                 // ============================================
 
-                console.log('⬇️ Downloading media...');
-                const downloadResponse = await fetch(`${API_BASE}/api/download`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ url: url })
-                });
+                // Store filename in hidden element
+                const filename = pinData.downloadUrl.split('/').pop() || 'file';
+                filenameDisplay.textContent = filename;
 
-                const downloadData = await downloadResponse.json();
-
-                console.log('📦 Download response:', downloadData);
-
-                if (!downloadData.success || !downloadData.data || !downloadData.data.downloadUrl) {
-                    showError('Failed to download the media. Please try again.');
-                    return;
-                }
-
-                const fileData = downloadData.data;
-
-                // ============================================
-                // STEP 3: Show the file (filename hidden)
-                // ============================================
-
-                currentFilename = fileData.filename;
-                currentDownloadUrl = fileData.downloadUrl;
-
-                // Store filename in hidden element (not shown to user)
-                filenameDisplay.textContent = currentFilename;
-
+                // Show preview
                 await displayMedia(
-                    currentDownloadUrl,
-                    fileData.size,
-                    fileData.type || pinData.type,
-                    pinData.title || fileData.title || 'Untitled'
+                    pinData.downloadUrl,
+                    pinData.size || null,
+                    pinData.type || 'image',
+                    pinData.title || 'Untitled'
                 );
+
+                // ============================================
+                // STEP 3: Set up download link to navigate to API
+                // ============================================
+
+                // Build the direct API URL for auto-download
+                const apiDownloadUrl = `${API_BASE}${API_GET_ENDPOINT}${encodeURIComponent(url)}`;
+                downloadLink.href = apiDownloadUrl;
+                downloadLink.target = '_blank'; // Opens in new tab
+                downloadLink.textContent = '⬇ Download File';
 
                 successBox.classList.add('show');
 
@@ -466,46 +453,8 @@
             mediaType.textContent = `Type: ${typeText}`;
             mediaSize.textContent = `Size: ${sizeText}`;
 
-            // Set up download button - uses hidden filename
-            downloadBtnFile.onclick = function(e) {
-                e.preventDefault();
-                // Use the stored filename (hidden from user)
-                downloadFileWithName(currentDownloadUrl, currentFilename);
-            };
-
-            // Show result
             result.style.display = 'block';
             error.classList.remove('show');
-        }
-
-        // ============================================
-        // DOWNLOAD WITH PROPER FILENAME (Hidden from user)
-        // ============================================
-
-        function downloadFileWithName(url, filename) {
-            // Fetch the file
-            fetch(url)
-                .then(response => response.blob())
-                .then(blob => {
-                    // Create a blob URL
-                    const blobUrl = URL.createObjectURL(blob);
-                    
-                    // Create a temporary anchor element
-                    const a = document.createElement('a');
-                    a.href = blobUrl;
-                    a.download = filename; // This sets the download filename
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    
-                    // Clean up
-                    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-                })
-                .catch(err => {
-                    console.error('Download error:', err);
-                    // Fallback: open in new tab
-                    window.open(url, '_blank');
-                });
         }
 
         // ============================================
@@ -544,6 +493,7 @@
 
         console.log('🌸 Pinterest Downloader loaded!');
         console.log(`📡 API Base: ${API_BASE}`);
+        console.log(`📡 Download Endpoint: ${API_GET_ENDPOINT}`);
         console.log('Examples:');
         console.log('  Image: https://pin.it/1ADF1XkNF');
         console.log('  Video: https://pin.it/4uur7opvF');
