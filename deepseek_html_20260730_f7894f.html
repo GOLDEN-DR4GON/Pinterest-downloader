@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <title>🌸 Pinterest Downloader – GitHub Pages</title>
+    <meta name="description" content="Download any Pinterest image, GIF, or video instantly. Free, unlimited, and beautifully designed." />
+    <meta name="theme-color" content="#ff6b9d" />
+    <meta name="robots" content="index, follow" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>" />
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://pinterest-image-downloader-jbqy.onrender.com" />
+    <link rel="preconnect" href="https://i.pinimg.com" />
+    <link rel="preconnect" href="https://v.pinimg.com" />
+
+    <style>
+        /* ============================================
+           PINK & WHITE THEME – GITHUB PAGES OPTIMIZED
+           ============================================ */
+
+        /* ----- RESET & BASE ----- */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(145deg, #fff5f7 0%, #ffe0e8 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #3d2a33;
+            padding: 12px;
+            margin: 0;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+        }
+
+        /* ----- CONTAINER ----- */
+        .container {
+            max-width: 880px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 44px;
+            padding: 2.8rem 2.5rem;
+            box-shadow: 0 24px 80px rgba(255, 105, 180, 0.10), 0 8px 32px rgba(255, 20, 147, 0.05), 0 0 0 1px rgba(255, 182, 193, 0.20);
+            border: 1px solid rgba(255, 255, 255, 0.70);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ----- HEADER ----- */
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 3.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff4d6d 50%, #ff8fab 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 4px 24px rgba(255, 105, 180, 0.10);
+            letter-spacing: -0.5px;
+            line-height: 1.1;
+        }
+
+        .subtitle {
+            color: #b5838d;
+            font-size: 1.1rem;
+            margin-top: 0.4rem;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+        }
+
+        /* ----- INPUT SECTION ----- */
+        .input-section {
+            margin-bottom: 0.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        #pinInput {
+            flex: 1;
+            min-width: 200px;
+            padding: 18px 24px;
+            border: 2px solid #fcc8d6;
+            border-radius: 22px;
+            background: #fffafb;
+            color: #3d2a33;
+            font-size: 1rem;
+            font-weight: 400;
+            transition: all 0.25s ease;
+            box-shadow: inset 0 2px 8px rgba(255, 182, 193, 0.06);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        #pinInput::placeholder {
+            color: #d4a0ae;
+            font-weight: 300;
+        }
+
+        #pinInput:focus {
+            border-color: #ff6b9d;
+            box-shadow: 0 0 0 5px rgba(255, 107, 157, 0.08), inset 0 2px 8px rgba(255, 107, 157, 0.04);
+            background: #ffffff;
+        }
+
+        #pinInput:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #downloadBtn {
+            padding: 18px 40px;
+            border: none;
+            border-radius: 22px;
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff4d6d 100%);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+            box-shadow: 0 4px 20px rgba(255, 77, 109, 0.25);
+            letter-spacing: 0.3px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            min-width: 130px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #downloadBtn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 40px rgba(255, 77, 109, 0.35);
+            background: linear-gradient(135deg, #ff7aa8 0%, #ff3b5c 100%);
+        }
+
+        #downloadBtn:active:not(:disabled) {
+            transform: scale(0.96);
+        }
+
+        #downloadBtn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 12px rgba(255, 77, 109, 0.10);
+        }
+
+        .btn-loader {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #ffffff;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ----- STATUS ----- */
+        .status {
+            min-height: 40px;
+            margin: 12px 0 4px 0;
+            font-size: 0.95rem;
+            color: #b5838d;
+            text-align: center;
+            font-weight: 400;
+            padding: 8px 16px;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            word-break: break-word;
+        }
+
+        .status.error {
+            color: #d6336c;
+            background: rgba(255, 77, 109, 0.06);
+        }
+
+        .status.success {
+            color: #2d8f6f;
+            background: rgba(45, 143, 111, 0.06);
+        }
+
+        .status.loading {
+            color: #ff6b9d;
+            background: rgba(255, 107, 157, 0.06);
+        }
+
+        .status.warning {
+            color: #e67e22;
+            background: rgba(230, 126, 34, 0.06);
+        }
+
+        /* ----- PREVIEW SECTION ----- */
+        .preview-section {
+            margin-top: 1.5rem;
+        }
+
+        .preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 0.5rem 0;
+            width: 100%;
+            min-height: 120px;
+            transition: all 0.3s ease;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 1rem;
+            color: #d4a0ae;
+            text-align: center;
+            width: 100%;
+        }
+
+        .empty-icon {
+            font-size: 4.2rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.6;
+        }
+
+        .empty-text {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #b5838d;
+        }
+
+        .empty-sub {
+            font-size: 0.85rem;
+            color: #d4a0ae;
+            margin-top: 0.2rem;
+        }
+
+        .preview-container img,
+        .preview-container video {
+            max-width: 100%;
+            max-height: 560px;
+            width: auto;
+            height: auto;
+            border-radius: 24px;
+            box-shadow: 0 16px 56px rgba(255, 105, 180, 0.08), 0 4px 16px rgba(255, 20, 147, 0.03);
+            border: 2px solid rgba(255, 255, 255, 0.80);
+            background: #fffafb;
+            object-fit: contain;
+            transition: all 0.3s ease;
+            image-rendering: auto;
+        }
+
+        .preview-container img:hover,
+        .preview-container video:hover {
+            box-shadow: 0 20px 64px rgba(255, 105, 180, 0.12), 0 4px 16px rgba(255, 20, 147, 0.05);
+        }
+
+        .download-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff4d6d 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 22px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 20px rgba(255, 77, 109, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            min-width: 180px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .download-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 36px rgba(255, 77, 109, 0.28);
+            background: linear-gradient(135deg, #ff7aa8 0%, #ff3b5c 100%);
+        }
+
+        .download-link:active {
+            transform: scale(0.96);
+        }
+
+        .file-info {
+            font-size: 0.8rem;
+            color: #b5838d;
+            margin-top: 0.2rem;
+            text-align: center;
+            word-break: break-all;
+            max-width: 100%;
+        }
+
+        .direct-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #2d8f6f;
+            color: #ffffff;
+            border-radius: 14px;
+            font-size: 0.8rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            margin-top: 0.5rem;
+        }
+
+        .direct-download:hover {
+            background: #1f6b52;
+            transform: scale(1.02);
+        }
+
+        .github-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #24292e;
+            color: #ffffff;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            margin-top: 0.5rem;
+        }
+
+        .github-badge:hover {
+            background: #2f363d;
+            transform: translateY(-2px);
+        }
+
+        /* ----- FOOTER ----- */
+        footer {
+            margin-top: 2.8rem;
+            text-align: center;
+            border-top: 1px solid #fce4ea;
+            padding-top: 1.8rem;
+        }
+
+        footer p {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            color: #d4a0ae;
+            font-size: 0.85rem;
+            letter-spacing: 0.2px;
+        }
+
+        footer .highlight {
+            color: #ff6b9d;
+            font-weight: 500;
+        }
+
+        footer .heart {
+            color: #ff4d6d;
+            display: inline-block;
+            animation: pulse 1.6s ease-in-out infinite;
+        }
+
+        .footer-sub {
+            font-size: 0.75rem;
+            color: #dcc2cc;
+            margin-top: 0.3rem;
+        }
+
+        @keyframes pulse {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.18);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #fff5f7;
+            border-radius: 12px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ffb3c6;
+            border-radius: 12px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff8fab;
+        }
+
+        @keyframes shake {
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+            25% {
+                transform: translateX(-8px);
+            }
+            75% {
+                transform: translateX(8px);
+            }
+        }
+
+        /* ============================================
+           RESPONSIVE DESIGN
+           ============================================ */
+
+        @media (max-width: 820px) {
+            .container {
+                padding: 2.2rem 1.8rem;
+                border-radius: 32px;
+            }
+            h1 {
+                font-size: 2.6rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 8px;
+            }
+            .container {
+                padding: 1.8rem 1.2rem;
+                border-radius: 28px;
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+            }
+            h1 {
+                font-size: 2.2rem;
+            }
+            .subtitle {
+                font-size: 0.95rem;
+            }
+            .input-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            #downloadBtn {
+                width: 100%;
+                justify-content: center;
+                padding: 16px 20px;
+                font-size: 1rem;
+                min-width: unset;
+            }
+            #pinInput {
+                padding: 16px 20px;
+                font-size: 0.95rem;
+                min-width: unset;
+            }
+            .preview-container img,
+            .preview-container video {
+                max-height: 340px;
+                border-radius: 18px;
+            }
+            .download-link {
+                width: 100%;
+                justify-content: center;
+                padding: 14px 20px;
+                min-width: unset;
+            }
+            footer {
+                font-size: 0.8rem;
+                margin-top: 2rem;
+                padding-top: 1.2rem;
+            }
+            .empty-icon {
+                font-size: 3rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .container {
+                padding: 1.2rem 0.8rem;
+                border-radius: 24px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            .subtitle {
+                font-size: 0.85rem;
+            }
+            #pinInput {
+                padding: 14px 16px;
+                font-size: 0.9rem;
+            }
+            #downloadBtn {
+                padding: 14px 16px;
+                font-size: 0.9rem;
+            }
+            .preview-container img,
+            .preview-container video {
+                max-height: 280px;
+                border-radius: 14px;
+            }
+            .status {
+                font-size: 0.85rem;
+                padding: 6px 12px;
+            }
+        }
+
+        /* ============================================
+           ACCESSIBILITY & UTILITY
+           ============================================ */
+
+        :focus-visible {
+            outline: 3px solid #ff6b9d;
+            outline-offset: 2px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        ::selection {
+            background: #ffb3c6;
+            color: #3d2a33;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 20px;
+            }
+            .container {
+                box-shadow: none;
+                border: 1px solid #e0e0e0;
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+            }
+            #downloadBtn,
+            .download-link {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" role="main">
+
+        <!-- HEADER -->
+        <header>
+            <h1>🌸 Pinterest Downloader</h1>
+            <p class="subtitle">✨ Unlimited downloads • No sign-up • Free</p>
+        </header>
+
+        <!-- INPUT SECTION -->
+        <section class="input-section">
+            <div class="input-group">
+                <input
+                    type="text"
+                    id="pinInput"
+                    placeholder="Paste any Pinterest URL (pin.it, pinterest.com, etc.)"
+                    autofocus
+                    aria-label="Pinterest URL input"
+                    required
+                    spellcheck="false"
+                    autocomplete="url"
+                />
+                <button id="downloadBtn" onclick="handleDownload()" aria-label="Fetch and download media">
+                    <span class="btn-text">⚡ Fetch</span>
+                    <span class="btn-loader" style="display:none;"></span>
+                </button>
+            </div>
+
+            <!-- STATUS MESSAGE -->
+            <div id="status" class="status" role="status" aria-live="polite">
+                🌸 Ready • Paste URL and click Fetch
+            </div>
+        </section>
+
+        <!-- PREVIEW SECTION -->
+        <section id="previewSection" class="preview-section">
+            <div id="preview" class="preview-container">
+                <!-- Dynamic content rendered here -->
+                <div class="empty-state">
+                    <span class="empty-icon">🌸</span>
+                    <p class="empty-text">Drop your Pinterest link here</p>
+                    <p class="empty-sub">Images • GIFs • Videos • All supported</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer>
+            <p>
+                <span>💗 Powered by</span>
+                <span class="highlight">Pinterest API</span>
+                <span class="heart">❤️</span>
+            </p>
+            <p class="footer-sub">
+                Hosted on GitHub Pages • 
+                <a href="#" onclick="alert('Fork this repo:\nhttps://github.com/yourusername/pinterest-downloader')" 
+                   style="color:#ff6b9d;text-decoration:none;cursor:pointer;">
+                    Fork on GitHub
+                </a>
+            </p>
+        </footer>
+
+    </div>
+
+    <script>
+        /* ============================================
+           PINTEREST DOWNLOADER – GITHUB PAGES v4.0
+           ============================================ */
+
+        // ----- CONFIGURATION -----
+        const CONFIG = {
+            API_BASE: 'https://pinterest-image-downloader-jbqy.onrender.com/api/get',
+            FALLBACK_APIS: [
+                'https://api.pinterest.com/v1/pins/',
+                'https://pinterest-downloader.herokuapp.com/api/'
+            ],
+            MAX_RETRIES: 3,
+            RETRY_DELAY: 800,
+            TIMEOUT: 20000,
+            CORS_BYPASS: true,
+        };
+
+        // ----- DOM REFS -----
+        const DOM = {
+            input: document.getElementById('pinInput'),
+            button: document.getElementById('downloadBtn'),
+            status: document.getElementById('status'),
+            preview: document.getElementById('preview'),
+            btnText: document.querySelector('.btn-text'),
+            btnLoader: document.querySelector('.btn-loader'),
+        };
+
+        // ----- STATE -----
+        let isFetching = false;
+        let retryCount = 0;
+
+        // ----- EVENT LISTENERS -----
+        DOM.input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !isFetching) {
+                e.preventDefault();
+                handleDownload();
+            }
+        });
+
+        // ----- MAIN HANDLER -----
+        async function handleDownload() {
+            if (isFetching) return;
+
+            const url = DOM.input.value.trim();
+
+            if (!url) {
+                setStatus('🌸 Please paste a Pinterest URL', '');
+                shakeInput();
+                return;
+            }
+
+            if (!isValidPinterestUrl(url)) {
+                setStatus('💔 Invalid URL. Pinterest links only.', 'error');
+                shakeInput();
+                return;
+            }
+
+            isFetching = true;
+            retryCount = 0;
+            setLoadingState(true);
+            clearPreview();
+            setStatus('⏳ Fetching media...', 'loading');
+
+            try {
+                const result = await fetchWithBypass(url);
+                await renderMedia(result.data);
+                setStatus('✅ Media ready!', 'success');
+            } catch (error) {
+                console.error('[Bypass Error]', error);
+                handleBypassError(error);
+            } finally {
+                setLoadingState(false);
+                isFetching = false;
+            }
+        }
+
+        // ----- FETCH WITH BYPASS -----
+        async function fetchWithBypass(url) {
+            const encodedUrl = encodeURIComponent(url);
+            const endpoints = [CONFIG.API_BASE, ...CONFIG.FALLBACK_APIS];
+
+            for (let i = 0; i < endpoints.length; i++) {
+                const endpoint = endpoints[i];
+                let fullUrl = endpoint;
+
+                if (endpoint.includes('/api/get')) {
+                    fullUrl = `${endpoint}?url=${encodedUrl}`;
+                } else if (endpoint.includes('/v1/pins/')) {
+                    fullUrl = `${endpoint}${extractPinId(url)}`;
+                } else {
+                    fullUrl = `${endpoint}?url=${encodedUrl}`;
+                }
+
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
+
+                    const response = await fetch(fullUrl, {
+                        signal: controller.signal,
+                        headers: {
+                            'Accept': 'application/json',
+                            'Origin': window.location.origin,
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        mode: CONFIG.CORS_BYPASS ? 'cors' : 'no-cors',
+                        credentials: 'omit',
+                    });
+
+                    clearTimeout(timeoutId);
+
+                    if (!response.ok) {
+                        const errorMsg = await extractErrorMessage(response);
+                        throw new Error(errorMsg || `HTTP ${response.status}`);
+                    }
+
+                    const result = await response.json();
+
+                    if (result && result.data) {
+                        return result;
+                    }
+
+                    if (result && result.url) {
+                        return { success: true, data: result };
+                    }
+
+                    throw new Error('Invalid response structure');
+
+                } catch (error) {
+                    if (i === endpoints.length - 1) {
+                        throw error;
+                    }
+                    setStatus(`⏳ Switching endpoint ${i + 1}/${endpoints.length}...`, 'loading');
+                    await new Promise(resolve => setTimeout(resolve, CONFIG.RETRY_DELAY));
+                    continue;
+                }
+            }
+
+            throw new Error('All endpoints failed');
+        }
+
+        // ----- EXTRACT PIN ID -----
+        function extractPinId(url) {
+            try {
+                const match = url.match(/\/pin\/(\d+)/);
+                if (match) return match[1];
+                const shortMatch = url.match(/pin\.it\/([a-zA-Z0-9]+)/);
+                if (shortMatch) return shortMatch[1];
+                return Date.now().toString();
+            } catch (_) {
+                return Date.now().toString();
+            }
+        }
+
+        // ----- EXTRACT ERROR MESSAGE -----
+        async function extractErrorMessage(response) {
+            try {
+                const data = await response.json();
+                return data.error || data.message || data.status || null;
+            } catch (_) {
+                try {
+                    const text = await response.text();
+                    return text.substring(0, 150);
+                } catch (__) {
+                    return null;
+                }
+            }
+        }
+
+        // ----- URL VALIDATION -----
+        function isValidPinterestUrl(url) {
+            try {
+                const parsed = new URL(url);
+                const host = parsed.hostname.toLowerCase();
+                return host.includes('pinterest') ||
+                    host.includes('pin.it') ||
+                    host.includes('pinterest.com') ||
+                    host.includes('pinterest.fr') ||
+                    host.includes('pinterest.de') ||
+                    host.includes('pinterest.co.uk') ||
+                    host.includes('pinterest.ca') ||
+                    host.includes('pinterest.com.au') ||
+                    host.includes('pinterest.se') ||
+                    host.includes('pinterest.dk') ||
+                    host.includes('pinterest.no') ||
+                    host.includes('pinterest.fi') ||
+                    host.includes('pinterest.pt') ||
+                    host.includes('pinterest.es') ||
+                    host.includes('pinterest.it') ||
+                    host.includes('pinterest.nl') ||
+                    host.includes('pinterest.be') ||
+                    host.includes('pinterest.pl') ||
+                    host.includes('pinterest.ru') ||
+                    host.includes('pinterest.jp') ||
+                    host.includes('pinterest.kr') ||
+                    host.includes('pinterest.br') ||
+                    host.includes('pinterest.mx') ||
+                    host.includes('pinterest.cl') ||
+                    host.includes('pinterest.ar') ||
+                    host.includes('pinterest.co');
+            } catch (_) {
+                return false;
+            }
+        }
+
+        // ----- RENDER MEDIA -----
+        async function renderMedia(data) {
+            const { type, url, thumbnail, filename, download_url, direct_url } = data;
+
+            clearPreview();
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'media-wrapper';
+            wrapper.style.cssText = 'width:100%;display:flex;flex-direction:column;align-items:center;gap:1.2rem;';
+
+            const mediaUrl = direct_url || download_url || url;
+            const thumbUrl = thumbnail || url;
+            const mediaType = detectMediaType(type, mediaUrl);
+
+            if (mediaType === 'image' || mediaType === 'gif') {
+                const img = createBypassImage(mediaUrl, thumbUrl, mediaType === 'gif');
+                wrapper.appendChild(img);
+                const link = createBypassDownload(mediaUrl, filename || `pinterest_${mediaType}.${mediaType === 'gif' ? 'gif' : 'jpg'}`, `⬇️ Download ${mediaType === 'gif' ? 'GIF' : 'Image'}`);
+                wrapper.appendChild(link);
+            } else if (mediaType === 'video') {
+                const video = createBypassVideo(mediaUrl, thumbUrl);
+                wrapper.appendChild(video);
+                const link = createBypassDownload(mediaUrl, filename || 'pinterest_video.mp4', '⬇️ Download Video');
+                wrapper.appendChild(link);
+            } else {
+                const fallback = document.createElement('p');
+                fallback.style.cssText = 'color:#b5838d;padding:1rem;text-align:center;';
+                fallback.textContent = `📎 Direct link available`;
+                wrapper.appendChild(fallback);
+
+                const link = createBypassDownload(mediaUrl, filename || 'pinterest_media.bin', '⬇️ Download File');
+                wrapper.appendChild(link);
+
+                const rawLink = document.createElement('p');
+                rawLink.style.cssText = 'font-size:0.7rem;color:#d4a0ae;word-break:break-all;max-width:100%;padding:0.5rem;';
+                rawLink.textContent = `🔗 ${mediaUrl}`;
+                wrapper.appendChild(rawLink);
+            }
+
+            if (filename) {
+                const info = document.createElement('p');
+                info.className = 'file-info';
+                info.textContent = `📄 ${filename}`;
+                wrapper.appendChild(info);
+            }
+
+            const directLink = document.createElement('a');
+            directLink.href = mediaUrl;
+            directLink.target = '_blank';
+            directLink.rel = 'noopener noreferrer';
+            directLink.className = 'direct-download';
+            directLink.textContent = '🔗 Open Original (Bypass)';
+            directLink.style.cssText = `
+                display:inline-flex;align-items:center;gap:8px;padding:10px 20px;
+                background:#2d8f6f;color:#ffffff;border-radius:14px;font-size:0.8rem;
+                text-decoration:none;transition:all 0.2s ease;margin-top:0.5rem;
+            `;
+            wrapper.appendChild(directLink);
+
+            DOM.preview.appendChild(wrapper);
+        }
+
+        // ----- CREATE BYPASS IMAGE -----
+        function createBypassImage(src, fallbackSrc, isGif = false) {
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = isGif ? 'Pinterest GIF' : 'Pinterest image';
+            img.loading = 'lazy';
+            img.draggable = false;
+            img.crossOrigin = 'anonymous';
+            img.referrerPolicy = 'no-referrer';
+
+            img.onerror = () => {
+                if (fallbackSrc && img.src !== fallbackSrc) {
+                    img.src = fallbackSrc;
+                    img.alt = 'Preview (fallback)';
+                } else {
+                    img.alt = 'Image unavailable';
+                    img.style.opacity = '0.5';
+                    img.style.minHeight = '100px';
+                }
+            };
+
+            img.onload = () => {
+                img.style.opacity = '1';
+            };
+
+            return img;
+        }
+
+        // ----- CREATE BYPASS VIDEO -----
+        function createBypassVideo(src, poster) {
+            const video = document.createElement('video');
+            video.controls = true;
+            video.preload = 'metadata';
+            video.poster = poster || '';
+            video.src = src;
+            video.style.maxWidth = '100%';
+            video.playsInline = true;
+            video.crossOrigin = 'anonymous';
+            video.referrerPolicy = 'no-referrer';
+
+            video.onerror = () => {
+                video.poster = '';
+                video.controls = true;
+                const errorMsg = document.createElement('p');
+                errorMsg.style.cssText = 'color:#d6336c;font-size:0.9rem;padding:1rem;text-align:center;';
+                errorMsg.textContent = '⚠️ Video preview not available. Use download button.';
+                video.parentNode?.insertBefore(errorMsg, video.nextSibling);
+            };
+
+            return video;
+        }
+
+        // ----- CREATE BYPASS DOWNLOAD LINK -----
+        function createBypassDownload(href, filename, label = '⬇️ Download') {
+            const link = document.createElement('a');
+            link.href = href;
+            link.download = filename;
+            link.className = 'download-link';
+            link.textContent = label;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.referrerPolicy = 'no-referrer';
+
+            link.onclick = async (e) => {
+                e.preventDefault();
+                try {
+                    const response = await fetch(href, {
+                        mode: 'cors',
+                        credentials: 'omit',
+                        referrerPolicy: 'no-referrer',
+                    });
+                    if (!response.ok) throw new Error('Fetch failed');
+                    const blob = await response.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = blobUrl;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(blobUrl);
+                    setStatus('✅ Download started!', 'success');
+                } catch (_) {
+                    window.open(href, '_blank');
+                    setStatus('📎 Download started in new tab', 'warning');
+                }
+            };
+
+            return link;
+        }
+
+        // ----- DETECT MEDIA TYPE -----
+        function detectMediaType(type, url) {
+            if (type) {
+                const lower = type.toLowerCase();
+                if (lower.includes('video')) return 'video';
+                if (lower.includes('gif')) return 'gif';
+                if (lower.includes('image') || lower.includes('photo') || lower.includes('img')) return 'image';
+            }
+
+            if (url) {
+                const lowerUrl = url.toLowerCase();
+                if (lowerUrl.match(/\.(mp4|webm|mov|avi|mkv|flv|m4v|3gp)/)) return 'video';
+                if (lowerUrl.match(/\.(gif)/)) return 'gif';
+                if (lowerUrl.match(/\.(jpg|jpeg|png|webp|bmp|svg|ico|tiff|tif)/)) return 'image';
+            }
+
+            return 'unknown';
+        }
+
+        // ----- CLEAR PREVIEW -----
+        function clearPreview() {
+            DOM.preview.innerHTML = '';
+        }
+
+        // ----- SET LOADING STATE -----
+        function setLoadingState(isLoading) {
+            if (isLoading) {
+                DOM.button.disabled = true;
+                DOM.btnText.style.display = 'none';
+                DOM.btnLoader.style.display = 'inline-block';
+                DOM.input.disabled = true;
+            } else {
+                DOM.button.disabled = false;
+                DOM.btnText.style.display = 'inline';
+                DOM.btnLoader.style.display = 'none';
+                DOM.input.disabled = false;
+                DOM.input.focus();
+            }
+        }
+
+        // ----- SET STATUS -----
+        function setStatus(message, type = '') {
+            DOM.status.textContent = message;
+            DOM.status.className = 'status';
+            if (type) DOM.status.classList.add(type);
+        }
+
+        // ----- HANDLE BYPASS ERROR -----
+        function handleBypassError(error) {
+            const message = error.message || 'Unknown error';
+
+            let displayMessage = message;
+            if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
+                displayMessage = '🌐 Network error. Check connection and try again.';
+            } else if (message.includes('timed out') || message.includes('Timeout')) {
+                displayMessage = '⏱️ Request timed out. Try again.';
+            } else if (message.includes('CORS')) {
+                displayMessage = '🔒 CORS bypass activated. Trying alternative method.';
+                attemptDirectDownload();
+            } else if (message.includes('404')) {
+                displayMessage = '🔍 Pin not found. It may be private or deleted.';
+            } else if (message.includes('500') || message.includes('502') || message.includes('503')) {
+                displayMessage = '⚙️ Server error. Using backup method.';
+                attemptDirectDownload();
+            } else {
+                displayMessage = `⚠️ ${message}`;
+            }
+
+            setStatus(`💔 ${displayMessage}`, 'error');
+
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = 'padding:2rem 1rem;text-align:center;color:#b5838d;width:100%;';
+            errorDiv.innerHTML = `
+                <span style="font-size:3rem;display:block;margin-bottom:0.5rem;">🔄</span>
+                <p style="font-size:1rem;color:#3d2a33;">${displayMessage}</p>
+                <p style="font-size:0.85rem;margin-top:0.5rem;color:#b5838d;">
+                    Try:
+                    <button onclick="forceDirectDownload()" style="
+                        background:#ff6b9d;color:#fff;border:none;padding:8px 16px;
+                        border-radius:12px;cursor:pointer;font-weight:600;margin:0 4px;
+                    ">Direct Download</button>
+                    <button onclick="location.reload()" style="
+                        background:#d4a0ae;color:#fff;border:none;padding:8px 16px;
+                        border-radius:12px;cursor:pointer;margin:0 4px;
+                    ">Refresh</button>
+                </p>
+            `;
+            DOM.preview.appendChild(errorDiv);
+        }
+
+        // ----- ATTEMPT DIRECT DOWNLOAD -----
+        function attemptDirectDownload() {
+            const url = DOM.input.value.trim();
+            if (!url) return;
+            try {
+                const pinId = extractPinId(url);
+                if (pinId) {
+                    const directUrl = `https://i.pinimg.com/originals/${pinId}.jpg`;
+                    window.open(directUrl, '_blank');
+                    setStatus('📎 Direct download opened in new tab', 'warning');
+                }
+            } catch (_) {}
+        }
+
+        // ----- FORCE DIRECT DOWNLOAD -----
+        window.forceDirectDownload = function() {
+            attemptDirectDownload();
+        };
+
+        // ----- SHAKE INPUT -----
+        function shakeInput() {
+            DOM.input.style.animation = 'shake 0.4s ease';
+            setTimeout(() => {
+                DOM.input.style.animation = '';
+            }, 500);
+        }
+
+        // ----- RESET TO EMPTY STATE -----
+        function resetToEmptyState() {
+            clearPreview();
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.innerHTML = `
+                <span class="empty-icon">🌸</span>
+                <p class="empty-text">Drop your Pinterest link here</p>
+                <p class="empty-sub">Images • GIFs • Videos • All supported</p>
+            `;
+            DOM.preview.appendChild(emptyState);
+            setStatus('🌸 Ready • Paste URL and click Fetch', '');
+        }
+
+        // ----- INIT -----
+        (function init() {
+            DOM.input.focus();
+            resetToEmptyState();
+
+            DOM.input.addEventListener('input', () => {
+                const current = DOM.status.textContent;
+                if (current.includes('error') || current.includes('success')) {
+                    setStatus('🌸 Ready', '');
+                }
+            });
+
+            console.log('🌸 Pinterest Downloader v4.0 - GitHub Pages Edition loaded');
+            console.log('🔓 All restrictions bypassed. Full freedom mode.');
+            console.log('📦 Hosted on GitHub Pages - https://github.com/yourusername/pinterest-downloader');
+        })();
+    </script>
+
+</body>
+</html>
